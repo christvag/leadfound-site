@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Found — AI-Powered Web Form Outreach at Scale</title>
+  <meta name="description" content="Lead Found's AI agent discovers website contact forms, crafts personalized messages, and submits them automatically. Turn every business website into a lead generation channel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========== RESET & TOKENS ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0A0F1C;
+      --bg-card: #111827;
+      --bg-elevated: #1A2332;
+      --bg-border: #1F2937;
+      --accent: #00FFC8;
+      --accent-dim: #00CC9F;
+      --accent-glow: rgba(0,255,200,0.12);
+      --accent-glow-strong: rgba(0,255,200,0.25);
+      --text-primary: #F9FAFB;
+      --text-secondary: #9CA3AF;
+      --text-muted: #6B7280;
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --max-width: 1200px;
+      --section-padding: 120px 0;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; font-family: inherit; }
+    img { max-width: 100%; height: auto; display: block; }
+    ul, ol { list-style: none; }
+
+    /* ========== UTILITY ========== */
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+    .section-overline {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .section-headline {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    .section-subhead {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.7;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 50px;
+      transition: var(--transition);
+      border: none;
+    }
+    .btn-primary:hover { background: var(--accent-dim); transform: translateY(-2px); box-shadow: 0 8px 30px var(--accent-glow-strong); }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 50px;
+      border: 1.5px solid var(--bg-border);
+      transition: var(--transition);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    /* ========== ANIMATIONS ========== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .reveal, .reveal-left, .reveal-right {
+      opacity: 0;
+      transition: opacity 0.8s var(--transition), transform 0.8s var(--transition);
+    }
+    .reveal { transform: translateY(40px); }
+    .reveal-left { transform: translateX(-40px); }
+    .reveal-right { transform: translateX(40px); }
+    .reveal.visible, .reveal-left.visible, .reveal-right.visible {
+      opacity: 1;
+      transform: translate(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .reveal-left, .reveal-right { opacity: 1; transform: none; transition: none; }
+      .trust-track { animation: none !important; }
+    }
+
+    /* ========== 1. NAVIGATION ========== */
+    #nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 16px 0;
+      transition: var(--transition);
+    }
+    #nav.scrolled {
+      background: rgba(10, 15, 28, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(31,41,55,0.5);
+      padding: 12px 0;
+    }
+    #nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    #nav-logo-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent-glow-strong);
+    }
+    #nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
+    #nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+    #nav-links a:hover { color: var(--text-primary); }
+    #nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #nav-login {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: none;
+      transition: var(--transition);
+    }
+    #nav-login:hover { color: var(--text-primary); }
+    #nav-cta {
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--accent);
+      color: var(--bg-primary);
+      border-radius: 50px;
+      transition: var(--transition);
+    }
+    #nav-cta:hover { background: var(--accent-dim); transform: translateY(-1px); }
+    #nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      padding: 4px;
+    }
+    #nav-hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+    #nav-mobile {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-primary);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+    #nav-mobile.open { display: flex; }
+    #nav-mobile a {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    #nav-mobile-close {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: none;
+      font-size: 32px;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    /* ========== 2. HERO ========== */
+    #hero {
+      padding: 160px 0 100px;
+      position: relative;
+      overflow: hidden;
+    }
+    #hero-glow-1 {
+      position: absolute;
+      top: -200px;
+      left: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0,255,200,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      animation: glowPulse 6s ease-in-out infinite;
+    }
+    #hero-glow-2 {
+      position: absolute;
+      bottom: -100px;
+      right: -200px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0,120,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      animation: glowPulse 8s ease-in-out infinite 2s;
+    }
+    #hero-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    #hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,255,200,0.2);
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 32px;
+    }
+    #hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+    #hero-headline {
+      font-size: clamp(40px, 6vw, 68px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    #hero-headline .accent { color: var(--accent); }
+    #hero-subhead {
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 620px;
+      margin: 0 auto 40px;
+    }
+    #hero-ctas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 64px;
+    }
+    #hero-visual {
+      position: relative;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    #hero-browser {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-border);
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.4), 0 0 60px var(--accent-glow);
+    }
+    #hero-browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--bg-border);
+    }
+    .browser-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    #browser-dot-1 { background: #EF4444; }
+    #browser-dot-2 { background: #F59E0B; }
+    #browser-dot-3 { background: #22C55E; }
+    #hero-browser-url {
+      flex: 1;
+      margin-left: 12px;
+      padding: 6px 16px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    #hero-browser img {
+      width: 100%;
+      display: block;
+    }
+    #hero-video-wrap {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 */
+      height: 0;
+      overflow: hidden;
+    }
+    #hero-video-wrap iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #hero-social-proof {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 48px;
+      flex-wrap: wrap;
+    }
+    .social-proof-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .social-proof-value {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 15px;
+    }
+    .social-proof-stars {
+      display: flex;
+      gap: 2px;
+      color: #F59E0B;
+      font-size: 14px;
+    }
+
+    /* ========== 3. TRUST BAR ========== */
+    #trust {
+      padding: 60px 0;
+      border-top: 1px solid var(--bg-border);
+      border-bottom: 1px solid var(--bg-border);
+      overflow: hidden;
+    }
+    #trust-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 32px;
+    }
+    #trust-marquee {
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+    #trust-marquee::before, #trust-marquee::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 120px;
+      z-index: 2;
+    }
+    #trust-marquee::before { left: 0; background: linear-gradient(90deg, var(--bg-primary), transparent); }
+    #trust-marquee::after { right: 0; background: linear-gradient(90deg, transparent, var(--bg-primary)); }
+    .trust-track {
+      display: inline-flex;
+      gap: 64px;
+      align-items: center;
+      animation: marquee 30s linear infinite;
+    }
+    .trust-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.5;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+
+    /* ========== 4. HOW IT WORKS ========== */
+    #how-it-works {
+      padding: var(--section-padding);
+    }
+    #hiw-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #hiw-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .hiw-step {
+      display: flex;
+      gap: 24px;
+      padding: 28px 0;
+      position: relative;
+    }
+    .hiw-step:not(:last-child) { border-bottom: 1px solid var(--bg-border); }
+    .hiw-step-num {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,255,200,0.2);
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .hiw-step-content { flex: 1; }
+    .hiw-step-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .hiw-step-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    #hiw-visual {
+      position: relative;
+    }
+    #hiw-visual img {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    #hiw-visual-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120%;
+      height: 120%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* ========== 5. CAPABILITIES ========== */
+    #capabilities {
+      padding: var(--section-padding);
+      background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(17,24,39,0.5) 50%, var(--bg-primary) 100%);
+    }
+    #cap-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    #cap-header .section-subhead { margin: 0 auto; }
+    #cap-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+    .cap-metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      text-align: center;
+      transition: var(--transition);
+    }
+    .cap-metric-card:hover {
+      border-color: rgba(0,255,200,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+    .cap-metric-value {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .cap-metric-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    #cap-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    #cap-features { display: flex; flex-direction: column; gap: 24px; }
+    .cap-feature {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .cap-feature-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-glow);
+      border-radius: var(--radius-sm);
+      color: var(--accent);
+      font-size: 18px;
+    }
+    .cap-feature-text h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .cap-feature-text p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    #cap-visual img {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    /* ========== 6. RESULTS ========== */
+    #results {
+      padding: var(--section-padding);
+    }
+    #results-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    #results-header .section-subhead { margin: 0 auto; }
+    #results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    .result-card:hover {
+      border-color: rgba(0,255,200,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+    .result-stat {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .result-stat-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .result-quote {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+    .result-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 20px;
+      border-top: 1px solid var(--bg-border);
+    }
+    .result-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .result-author-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .result-author-role {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ========== 7. FEATURES GRID ========== */
+    #features {
+      padding: var(--section-padding);
+      background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(17,24,39,0.5) 50%, var(--bg-primary) 100%);
+    }
+    #features-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    #features-header .section-subhead { margin: 0 auto; }
+    #features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      transition: var(--transition);
+    }
+    .feature-card:hover {
+      border-color: rgba(0,255,200,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,255,200,0.15);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      font-size: 24px;
+      color: var(--accent);
+    }
+    .feature-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .feature-card p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ========== 8. DASHBOARD SHOWCASE ========== */
+    #showcase {
+      padding: var(--section-padding);
+    }
+    #showcase-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    #showcase-header .section-subhead { margin: 0 auto; }
+    #showcase-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .showcase-tab {
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: 50px;
+      transition: var(--transition);
+    }
+    .showcase-tab:hover { color: var(--text-primary); border-color: var(--text-muted); }
+    .showcase-tab.active {
+      background: var(--accent);
+      color: var(--bg-primary);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    #showcase-display {
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .showcase-image {
+      display: none;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-border);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      animation: fadeInUp 0.5s ease;
+    }
+    .showcase-image.active { display: block; }
+
+    /* ========== 9. TESTIMONIALS ========== */
+    #testimonials {
+      padding: var(--section-padding);
+      background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(17,24,39,0.5) 50%, var(--bg-primary) 100%);
+    }
+    #testimonials-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    #testimonials-header .section-subhead { margin: 0 auto; }
+    #testimonials-carousel {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .testimonial-slide {
+      display: none;
+      text-align: center;
+      animation: fadeInUp 0.5s ease;
+    }
+    .testimonial-slide.active { display: block; }
+    .testimonial-stars {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 32px;
+      color: #F59E0B;
+      font-size: 20px;
+    }
+    .testimonial-quote {
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.6;
+      margin-bottom: 36px;
+      color: var(--text-primary);
+    }
+    .testimonial-author-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 2px solid var(--bg-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .testimonial-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .testimonial-role {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    #testimonial-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 40px;
+    }
+    .testimonial-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bg-border);
+      border: none;
+      transition: var(--transition);
+      padding: 0;
+    }
+    .testimonial-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow-strong); }
+    #testimonial-nav {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .testimonial-arrow {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: 50%;
+      color: var(--text-secondary);
+      font-size: 18px;
+      transition: var(--transition);
+      padding: 0;
+    }
+    .testimonial-arrow:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ========== 10. FINAL CTA ========== */
+    #cta {
+      padding: var(--section-padding);
+      position: relative;
+      overflow: hidden;
+    }
+    #cta-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(0,255,200,0.1) 0%, transparent 70%);
+      pointer-events: none;
+      animation: glowPulse 5s ease-in-out infinite;
+    }
+    #cta-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    #cta-inner .section-headline { margin-bottom: 20px; }
+    #cta-inner .section-subhead {
+      margin: 0 auto 40px;
+      text-align: center;
+    }
+    #cta-box {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--radius-xl);
+      padding: 64px 48px;
+    }
+
+    /* ========== 11. FOOTER ========== */
+    #footer {
+      padding: 80px 0 40px;
+      border-top: 1px solid var(--bg-border);
+    }
+    #footer-inner {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 48px;
+      margin-bottom: 64px;
+    }
+    #footer-brand p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-top: 16px;
+      max-width: 280px;
+    }
+    #footer-social {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .footer-social-link {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: 50%;
+      color: var(--text-secondary);
+      font-size: 16px;
+      transition: var(--transition);
+    }
+    .footer-social-link:hover { border-color: var(--accent); color: var(--accent); }
+    .footer-col h4 {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: var(--text-secondary);
+      padding: 6px 0;
+      transition: var(--transition);
+    }
+    .footer-col a:hover { color: var(--accent); }
+    #footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 32px;
+      border-top: 1px solid var(--bg-border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    #footer-bottom-links {
+      display: flex;
+      gap: 24px;
+    }
+    #footer-bottom-links a { transition: var(--transition); }
+    #footer-bottom-links a:hover { color: var(--text-secondary); }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      :root { --section-padding: 80px 0; }
+      #hiw-inner, #cap-content { grid-template-columns: 1fr; gap: 48px; }
+      #hiw-visual { order: -1; }
+      #cap-metrics { grid-template-columns: repeat(2, 1fr); }
+      #results-grid, #features-grid { grid-template-columns: repeat(2, 1fr); }
+      #footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      :root { --section-padding: 64px 0; }
+      #nav-links, #nav-actions { display: none; }
+      #nav-hamburger { display: flex; }
+      #hero { padding: 120px 0 64px; }
+      #hero-headline { font-size: clamp(32px, 8vw, 48px); }
+      #hero-ctas { flex-direction: column; gap: 12px; }
+      #hero-ctas .btn-primary, #hero-ctas .btn-outline { width: 100%; justify-content: center; }
+      #hero-social-proof { flex-direction: column; gap: 16px; }
+      #cap-metrics { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      #results-grid, #features-grid { grid-template-columns: 1fr; }
+      #showcase-tabs { gap: 6px; }
+      .showcase-tab { padding: 8px 16px; font-size: 13px; }
+      .testimonial-quote { font-size: 18px; }
+      #footer-inner { grid-template-columns: 1fr 1fr; gap: 32px; }
+      #footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      #cta-box { padding: 40px 24px; }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 0 16px; }
+      #cap-metrics { grid-template-columns: 1fr; }
+      .cap-metric-value { font-size: 32px; }
+      #footer-inner { grid-template-columns: 1fr; gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== 1. NAVIGATION ========== -->
+  <nav id="nav" aria-label="Main navigation">
+    <div class="container">
+      <div id="nav-inner">
+        <a href="#" id="nav-logo" aria-label="Lead Found home">
+          <span id="nav-logo-dot"></span>
+          Lead Found
+        </a>
+        <div id="nav-links">
+          <a href="#features" id="nav-link-features">Features</a>
+          <a href="#how-it-works" id="nav-link-hiw">How It Works</a>
+          <a href="#results" id="nav-link-results">Results</a>
+          <a href="#showcase" id="nav-link-showcase">Platform</a>
+        </div>
+        <div id="nav-actions">
+          <button id="nav-login" aria-label="Log in">Log In</button>
+          <a href="#cta" id="nav-cta">Get Started</a>
+        </div>
+        <button id="nav-hamburger" aria-label="Open menu">
+          <span id="hamburger-line-1"></span>
+          <span id="hamburger-line-2"></span>
+          <span id="hamburger-line-3"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="nav-mobile" aria-label="Mobile navigation">
+    <button id="nav-mobile-close" aria-label="Close menu">&times;</button>
+    <a href="#features" id="mobile-link-features" class="mobile-nav-link">Features</a>
+    <a href="#how-it-works" id="mobile-link-hiw" class="mobile-nav-link">How It Works</a>
+    <a href="#results" id="mobile-link-results" class="mobile-nav-link">Results</a>
+    <a href="#showcase" id="mobile-link-showcase" class="mobile-nav-link">Platform</a>
+    <a href="#cta" id="mobile-link-cta" class="btn-primary">Get Started</a>
+  </div>
+
+  <main>
+
+    <!-- ========== 2. HERO ========== -->
+    <section id="hero">
+      <div id="hero-glow-1"></div>
+      <div id="hero-glow-2"></div>
+      <div class="container">
+        <div id="hero-inner">
+          <div id="hero-badge" class="reveal">
+            <span id="hero-badge-dot"></span>
+            AI-Powered Form Outreach
+          </div>
+          <h1 id="hero-headline" class="reveal">
+            Reach Every Business Through <span class="accent">Their Own Website</span>
+          </h1>
+          <p id="hero-subhead" class="reveal">
+            Lead Found's AI agent discovers website contact forms, crafts personalized messages, and submits them automatically &mdash; turning every business website into a lead generation channel.
+          </p>
+          <div id="hero-ctas" class="reveal">
+            <a href="#cta" id="hero-cta-primary" class="btn-primary">
+              Start Free Trial
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="#showcase" id="hero-cta-secondary" class="btn-outline">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><polygon points="7,5.5 11,8 7,10.5" fill="currentColor"/></svg>
+              Watch Demo
+            </a>
+          </div>
+        </div>
+        <div id="hero-visual" class="reveal">
+          <div id="hero-browser">
+            <div id="hero-browser-bar">
+              <span class="browser-dot" id="browser-dot-1"></span>
+              <span class="browser-dot" id="browser-dot-2"></span>
+              <span class="browser-dot" id="browser-dot-3"></span>
+              <span id="hero-browser-url">leadfound.ai/demo</span>
+            </div>
+            <div id="hero-video-wrap">
+              <iframe
+                id="hero-video"
+                src="https://player.vimeo.com/video/1176780287?autoplay=1&loop=1&muted=1&quality=1080p"
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowfullscreen
+                title="Lead Found — AI-Powered Web Form Outreach Demo"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+        <div id="hero-social-proof" class="reveal">
+          <div class="social-proof-item" id="social-proof-trusted">
+            <span class="social-proof-value">500+</span> agencies trust us
+          </div>
+          <div class="social-proof-item" id="social-proof-rating">
+            <div class="social-proof-stars">
+              <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+            </div>
+            <span>4.9/5 rating</span>
+          </div>
+          <div class="social-proof-item" id="social-proof-forms">
+            <span class="social-proof-value">10M+</span> forms submitted
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 3. TRUST BAR ========== -->
+    <section id="trust">
+      <p id="trust-label">Powering outreach for forward-thinking teams</p>
+      <div id="trust-marquee">
+        <div class="trust-track" id="trust-track-1">
+          <span class="trust-brand" id="brand-1">Apex Marketing</span>
+          <span class="trust-brand" id="brand-2">Stellar Growth</span>
+          <span class="trust-brand" id="brand-3">NovaBridge</span>
+          <span class="trust-brand" id="brand-4">CloudReach</span>
+          <span class="trust-brand" id="brand-5">VantagePoint</span>
+          <span class="trust-brand" id="brand-6">DigitalForge</span>
+          <span class="trust-brand" id="brand-7">ScaleWorks</span>
+          <span class="trust-brand" id="brand-8">PipelineHQ</span>
+          <!-- Duplicate for seamless loop -->
+          <span class="trust-brand" id="brand-1b">Apex Marketing</span>
+          <span class="trust-brand" id="brand-2b">Stellar Growth</span>
+          <span class="trust-brand" id="brand-3b">NovaBridge</span>
+          <span class="trust-brand" id="brand-4b">CloudReach</span>
+          <span class="trust-brand" id="brand-5b">VantagePoint</span>
+          <span class="trust-brand" id="brand-6b">DigitalForge</span>
+          <span class="trust-brand" id="brand-7b">ScaleWorks</span>
+          <span class="trust-brand" id="brand-8b">PipelineHQ</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 4. HOW IT WORKS ========== -->
+    <section id="how-it-works">
+      <div class="container">
+        <div id="hiw-header" class="reveal" style="text-align:center; margin-bottom:64px;">
+          <p class="section-overline" id="hiw-overline">How It Works</p>
+          <h2 class="section-headline" id="hiw-headline">From Target List to Submitted Form <span class="accent">in Minutes</span></h2>
+          <p class="section-subhead" id="hiw-subhead" style="margin:0 auto;">Four simple steps to automate your entire outreach pipeline through website contact forms.</p>
+        </div>
+        <div id="hiw-inner">
+          <div id="hiw-steps" class="reveal-left">
+            <div class="hiw-step" id="step-1">
+              <span class="hiw-step-num" id="step-1-num">1</span>
+              <div class="hiw-step-content">
+                <h3 class="hiw-step-title" id="step-1-title">Upload Your Leads</h3>
+                <p class="hiw-step-desc" id="step-1-desc">Import a CSV of target websites or let our crawler build your list from any niche, industry, or location.</p>
+              </div>
+            </div>
+            <div class="hiw-step" id="step-2">
+              <span class="hiw-step-num" id="step-2-num">2</span>
+              <div class="hiw-step-content">
+                <h3 class="hiw-step-title" id="step-2-title">AI Discovers Forms</h3>
+                <p class="hiw-step-desc" id="step-2-desc">Our agent scans each site, identifies contact, inquiry, and quote-request forms automatically with intelligent field mapping.</p>
+              </div>
+            </div>
+            <div class="hiw-step" id="step-3">
+              <span class="hiw-step-num" id="step-3-num">3</span>
+              <div class="hiw-step-content">
+                <h3 class="hiw-step-title" id="step-3-title">Personalize Messages</h3>
+                <p class="hiw-step-desc" id="step-3-desc">Craft dynamic templates with merge fields. AI tailors each message to the business context, industry, and form type.</p>
+              </div>
+            </div>
+            <div class="hiw-step" id="step-4">
+              <span class="hiw-step-num" id="step-4-num">4</span>
+              <div class="hiw-step-content">
+                <h3 class="hiw-step-title" id="step-4-title">Submit & Track</h3>
+                <p class="hiw-step-desc" id="step-4-desc">Forms are submitted at human-like intervals. Track success rates, failures, and responses in real time from your dashboard.</p>
+              </div>
+            </div>
+          </div>
+          <div id="hiw-visual" class="reveal-right">
+            <div id="hiw-visual-glow"></div>
+            <img src="imgs/dashboard-overview.png" alt="Lead Found dashboard showing system capacity with server nodes and active operations table with campaign progress" id="hiw-visual-img">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 5. CAPABILITIES ========== -->
+    <section id="capabilities">
+      <div class="container">
+        <div id="cap-header" class="reveal">
+          <p class="section-overline" id="cap-overline">Performance</p>
+          <h2 class="section-headline" id="cap-headline">Built for Scale. <span class="accent">Priced for Results.</span></h2>
+          <p class="section-subhead" id="cap-subhead">Real metrics from real campaigns running on the Lead Found platform.</p>
+        </div>
+        <div id="cap-metrics" class="reveal">
+          <div class="cap-metric-card" id="metric-1">
+            <div class="cap-metric-value" data-target="72" data-suffix=".0%" id="metric-1-value">0%</div>
+            <div class="cap-metric-label" id="metric-1-label">Success Rate</div>
+          </div>
+          <div class="cap-metric-card" id="metric-2">
+            <div class="cap-metric-value" data-target="5626" data-suffix="" id="metric-2-value">0</div>
+            <div class="cap-metric-label" id="metric-2-label">Forms Processed / Job</div>
+          </div>
+          <div class="cap-metric-card" id="metric-3">
+            <div class="cap-metric-value" data-target="3.84" data-prefix="$" data-suffix="" id="metric-3-value">$0</div>
+            <div class="cap-metric-label" id="metric-3-label">Avg. Cost per Job</div>
+          </div>
+          <div class="cap-metric-card" id="metric-4">
+            <div class="cap-metric-value" data-target="14" data-suffix="m 36s" id="metric-4-value">0m</div>
+            <div class="cap-metric-label" id="metric-4-label">Avg. Job Duration</div>
+          </div>
+        </div>
+        <div id="cap-content">
+          <div id="cap-features" class="reveal-left">
+            <div class="cap-feature" id="cap-feature-1">
+              <div class="cap-feature-icon" id="cap-feature-icon-1">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5L10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cap-feature-text">
+                <h4 id="cap-feature-1-title">Multi-Region Infrastructure</h4>
+                <p id="cap-feature-1-desc">Distributed server nodes across multiple regions ensure fast, reliable form submissions worldwide with automatic failover.</p>
+              </div>
+            </div>
+            <div class="cap-feature" id="cap-feature-2">
+              <div class="cap-feature-icon" id="cap-feature-icon-2">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 7h16" stroke="currentColor" stroke-width="1.5"/><circle cx="5" cy="5" r="0.5" fill="currentColor"/><circle cx="7" cy="5" r="0.5" fill="currentColor"/></svg>
+              </div>
+              <div class="cap-feature-text">
+                <h4 id="cap-feature-2-title">Batch Processing Engine</h4>
+                <p id="cap-feature-2-desc">Process thousands of websites in parallel. Our engine handles queuing, retries, and rate limiting automatically.</p>
+              </div>
+            </div>
+            <div class="cap-feature" id="cap-feature-3">
+              <div class="cap-feature-icon" id="cap-feature-icon-3">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 17V7l7-5 7 5v10a1 1 0 01-1 1H4a1 1 0 01-1-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 17v-5h4v5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="cap-feature-text">
+                <h4 id="cap-feature-3-title">Cost Transparency</h4>
+                <p id="cap-feature-3-desc">Know exactly what each campaign costs. Real-time cost tracking per job, per form, and per successful submission.</p>
+              </div>
+            </div>
+          </div>
+          <div id="cap-visual" class="reveal-right">
+            <img src="imgs/job-analytics.webp" alt="Lead Found job details showing 5,626 forms processed, 72% success rate, 10.3 GB bandwidth, and $3.84 cost" id="cap-visual-img">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 6. RESULTS ========== -->
+    <section id="results">
+      <div class="container">
+        <div id="results-header" class="reveal">
+          <p class="section-overline" id="results-overline">Case Studies</p>
+          <h2 class="section-headline" id="results-headline">Real Results from <span class="accent">Real Campaigns</span></h2>
+          <p class="section-subhead" id="results-subhead">See how agencies and businesses use Lead Found to scale their outreach and generate qualified leads.</p>
+        </div>
+        <div id="results-grid" class="reveal">
+          <div class="result-card" id="case-study-1">
+            <div class="result-stat" id="case-study-1-stat">340+</div>
+            <div class="result-stat-label" id="case-study-1-label">Qualified Leads in 30 Days</div>
+            <p class="result-quote" id="case-study-1-quote">"Generated 340+ qualified roofing leads through automated form submissions to contractor directories and home service portals."</p>
+            <div class="result-author" id="case-study-1-author">
+              <div class="result-avatar" id="case-study-1-avatar">DA</div>
+              <div>
+                <div class="result-author-name" id="case-study-1-name">Digital Age Marketing</div>
+                <div class="result-author-role" id="case-study-1-role">Home Services Lead Gen</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" id="case-study-2">
+            <div class="result-stat" id="case-study-2-stat">67.9%</div>
+            <div class="result-stat-label" id="case-study-2-label">Form Submission Success</div>
+            <p class="result-quote" id="case-study-2-quote">"Reached 2,587 property management companies with a 67.9% form submission success rate. Our pipeline has never been fuller."</p>
+            <div class="result-author" id="case-study-2-author">
+              <div class="result-avatar" id="case-study-2-avatar">CL</div>
+              <div>
+                <div class="result-author-name" id="case-study-2-name">Comlock Agency</div>
+                <div class="result-author-role" id="case-study-2-role">Real Estate Outreach</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" id="case-study-3">
+            <div class="result-stat" id="case-study-3-stat">430+</div>
+            <div class="result-stat-label" id="case-study-3-label">Sales Calls Booked</div>
+            <p class="result-quote" id="case-study-3-quote">"Submitted 9,617 demo request forms across tech company websites, booking 430+ sales calls. The ROI is unmatched."</p>
+            <div class="result-author" id="case-study-3-author">
+              <div class="result-avatar" id="case-study-3-avatar">VI</div>
+              <div>
+                <div class="result-author-name" id="case-study-3-name">Vin Infante Consulting</div>
+                <div class="result-author-role" id="case-study-3-role">SaaS Demo Generation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 7. FEATURES GRID ========== -->
+    <section id="features">
+      <div class="container">
+        <div id="features-header" class="reveal">
+          <p class="section-overline" id="features-overline">Features</p>
+          <h2 class="section-headline" id="features-headline">Everything You Need to <span class="accent">Scale Outreach</span></h2>
+          <p class="section-subhead" id="features-subhead">Powerful AI-driven tools designed to automate every step of your web form outreach pipeline.</p>
+        </div>
+        <div id="features-grid" class="reveal">
+          <div class="feature-card" id="feature-card-1">
+            <div class="feature-icon" id="feature-icon-1">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 id="feature-card-1-title">Intelligent Form Detection</h3>
+            <p id="feature-card-1-desc">AI identifies and maps form fields across any website &mdash; contact forms, quote requests, demo bookings, newsletter signups. No manual configuration required.</p>
+          </div>
+          <div class="feature-card" id="feature-card-2">
+            <div class="feature-icon" id="feature-icon-2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <h3 id="feature-card-2-title">Human-Like Submission</h3>
+            <p id="feature-card-2-desc">Randomized timing, realistic browser fingerprints, and intelligent CAPTCHA handling ensure your messages get delivered like they were sent by a real person.</p>
+          </div>
+          <div class="feature-card" id="feature-card-3">
+            <div class="feature-icon" id="feature-icon-3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7 14l4-4 4 4 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 id="feature-card-3-title">Campaign Analytics</h3>
+            <p id="feature-card-3-desc">Track every submission in real time. See success rates, response rates, and cost per lead across all campaigns from a single dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 8. DASHBOARD SHOWCASE ========== -->
+    <section id="showcase">
+      <div class="container">
+        <div id="showcase-header" class="reveal">
+          <p class="section-overline" id="showcase-overline">Platform</p>
+          <h2 class="section-headline" id="showcase-headline">Your Command Center for <span class="accent">Outreach at Scale</span></h2>
+          <p class="section-subhead" id="showcase-subhead">Monitor campaigns, track performance, and manage infrastructure from one powerful dashboard.</p>
+        </div>
+        <div id="showcase-tabs" class="reveal">
+          <button class="showcase-tab active" data-tab="0" id="tab-1" aria-label="Show Operations view">Operations</button>
+          <button class="showcase-tab" data-tab="1" id="tab-2" aria-label="Show System Capacity view">System Capacity</button>
+          <button class="showcase-tab" data-tab="2" id="tab-3" aria-label="Show Job Details view">Job Details</button>
+          <button class="showcase-tab" data-tab="3" id="tab-4" aria-label="Show Overview">Overview</button>
+        </div>
+        <div id="showcase-display" class="reveal">
+          <img src="imgs/campaign-manager.webp" alt="Active Operations table showing multiple campaigns with progress bars, success rates, bandwidth, and cost metrics" class="showcase-image active" id="showcase-img-1">
+          <img src="imgs/live-operations.webp" alt="System Capacity view with server node status indicators and running operations" class="showcase-image" id="showcase-img-2">
+          <img src="imgs/job-analytics.webp" alt="Job Details showing 5,626 processed forms, 72% success rate, and $3.84 total cost" class="showcase-image" id="showcase-img-3">
+          <img src="imgs/dashboard-overview.png" alt="Full dashboard overview combining system capacity monitoring and active operations tracking" class="showcase-image" id="showcase-img-4">
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 9. TESTIMONIALS ========== -->
+    <section id="testimonials">
+      <div class="container">
+        <div id="testimonials-header" class="reveal">
+          <p class="section-overline" id="testimonials-overline">Testimonials</p>
+          <h2 class="section-headline" id="testimonials-headline">Trusted by Growth Teams <span class="accent">Everywhere</span></h2>
+          <p class="section-subhead" id="testimonials-subhead">Hear from the agencies and marketers who rely on Lead Found daily.</p>
+        </div>
+        <div id="testimonials-carousel" class="reveal">
+          <div class="testimonial-slide active" id="testimonial-1">
+            <div class="testimonial-stars" id="testimonial-1-stars">
+              <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+            </div>
+            <p class="testimonial-quote" id="testimonial-1-quote">"Lead Found replaced our entire BDR team's manual outreach. We're reaching 10x more businesses at a fraction of the cost. The automation is seamless."</p>
+            <div class="testimonial-author-img" id="testimonial-1-avatar">MC</div>
+            <div class="testimonial-name" id="testimonial-1-name">Marcus Chen</div>
+            <div class="testimonial-role" id="testimonial-1-role">Growth Lead, ScaleOps Agency</div>
+          </div>
+          <div class="testimonial-slide" id="testimonial-2">
+            <div class="testimonial-stars" id="testimonial-2-stars">
+              <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+            </div>
+            <p class="testimonial-quote" id="testimonial-2-quote">"The form detection AI is incredible. It handles everything from simple contact forms to complex multi-step quote builders. We haven't found a form it can't fill."</p>
+            <div class="testimonial-author-img" id="testimonial-2-avatar">SW</div>
+            <div class="testimonial-name" id="testimonial-2-name">Sarah Williams</div>
+            <div class="testimonial-role" id="testimonial-2-role">Agency Owner, BrightPath Digital</div>
+          </div>
+          <div class="testimonial-slide" id="testimonial-3">
+            <div class="testimonial-stars" id="testimonial-3-stars">
+              <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+            </div>
+            <p class="testimonial-quote" id="testimonial-3-quote">"We went from 200 outreach touches a week to 5,000. The ROI speaks for itself. Lead Found is the most impactful tool we've added to our stack this year."</p>
+            <div class="testimonial-author-img" id="testimonial-3-avatar">DP</div>
+            <div class="testimonial-name" id="testimonial-3-name">David Park</div>
+            <div class="testimonial-role" id="testimonial-3-role">Marketing Director, Vantage Group</div>
+          </div>
+          <div id="testimonial-dots">
+            <button class="testimonial-dot active" data-slide="0" id="testimonial-dot-1" aria-label="Go to testimonial 1"></button>
+            <button class="testimonial-dot" data-slide="1" id="testimonial-dot-2" aria-label="Go to testimonial 2"></button>
+            <button class="testimonial-dot" data-slide="2" id="testimonial-dot-3" aria-label="Go to testimonial 3"></button>
+          </div>
+          <div id="testimonial-nav">
+            <button class="testimonial-arrow" id="testimonial-prev" aria-label="Previous testimonial">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="testimonial-arrow" id="testimonial-next" aria-label="Next testimonial">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 10. FINAL CTA ========== -->
+    <section id="cta">
+      <div id="cta-glow"></div>
+      <div class="container">
+        <div id="cta-inner">
+          <div id="cta-box">
+            <p class="section-overline" id="cta-overline" style="text-align:center;">Get Started</p>
+            <h2 class="section-headline" id="cta-headline" style="text-align:center;">Start Reaching Businesses <span class="accent">at Scale</span></h2>
+            <p class="section-subhead" id="cta-subhead">Join 500+ agencies already using Lead Found to automate their outreach pipeline. No credit card required.</p>
+            <div style="text-align:center; margin-top:40px;">
+              <a href="#" id="cta-button" class="btn-primary" style="padding:18px 48px; font-size:16px;">
+                Get Started Free
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== 11. FOOTER ========== -->
+  <footer id="footer">
+    <div class="container">
+      <div id="footer-inner">
+        <div id="footer-brand">
+          <a href="#" id="footer-logo" style="display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;letter-spacing:-0.02em;">
+            <span style="width:10px;height:10px;background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent-glow-strong);" id="footer-logo-dot"></span>
+            Lead Found
+          </a>
+          <p id="footer-brand-desc">AI-powered web form outreach that turns every business website into a lead generation channel. Scale your pipeline without scaling your team.</p>
+          <div id="footer-social">
+            <a href="#" class="footer-social-link" id="social-linkedin" aria-label="LinkedIn">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM1.5 5h3v9h-3V5zm5 0h2.8v1.3h.04c.4-.75 1.37-1.54 2.82-1.54C15.06 4.76 16 6.74 16 9.28V14h-3v-4.16c0-1-.02-2.28-1.39-2.28-1.4 0-1.61 1.09-1.61 2.21V14h-3V5z"/></svg>
+            </a>
+            <a href="#" class="footer-social-link" id="social-x" aria-label="X (Twitter)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M12.6 1h2.4l-5.3 6.1L16 15h-4.9l-3.8-5-4.4 5H.5l5.7-6.5L.2 1h5l3.5 4.6L12.6 1zm-.8 12.6h1.3L4.4 2.3H3L11.8 13.6z"/></svg>
+            </a>
+            <a href="#" class="footer-social-link" id="social-instagram" aria-label="Instagram">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.44c2.14 0 2.39.01 3.23.05.78.04 1.2.16 1.49.27.37.14.64.32.92.6s.46.55.6.92c.11.28.23.71.27 1.49.04.84.05 1.1.05 3.23s-.01 2.39-.05 3.23c-.04.78-.16 1.2-.27 1.49-.14.37-.32.64-.6.92s-.55.46-.92.6c-.28.11-.71.23-1.49.27-.84.04-1.1.05-3.23.05s-2.39-.01-3.23-.05c-.78-.04-1.2-.16-1.49-.27a2.5 2.5 0 01-.92-.6 2.5 2.5 0 01-.6-.92c-.11-.28-.23-.71-.27-1.49C1.45 10.39 1.44 10.14 1.44 8s.01-2.39.05-3.23c.04-.78.16-1.2.27-1.49.14-.37.32-.64.6-.92s.55-.46.92-.6c.28-.11.71-.23 1.49-.27C5.61 1.45 5.86 1.44 8 1.44zM8 0C5.83 0 5.55.01 4.7.05c-.84.04-1.42.17-1.92.36-.52.2-.96.47-1.4.91S.61 2.26.41 2.78c-.19.5-.32 1.08-.36 1.92C.01 5.55 0 5.83 0 8s.01 2.45.05 3.3c.04.84.17 1.42.36 1.92.2.52.47.96.91 1.4s.88.71 1.4.91c.5.19 1.08.32 1.92.36.85.04 1.13.05 3.36.05s2.51-.01 3.36-.05c.84-.04 1.42-.17 1.92-.36.52-.2.96-.47 1.4-.91s.71-.88.91-1.4c.19-.5.32-1.08.36-1.92.04-.85.05-1.13.05-3.3s-.01-2.45-.05-3.3c-.04-.84-.17-1.42-.36-1.92-.2-.52-.47-.96-.91-1.4S13.74.61 13.22.41c-.5-.19-1.08-.32-1.92-.36C10.45.01 10.17 0 8 0zm0 3.89a4.11 4.11 0 100 8.22 4.11 4.11 0 000-8.22zM8 10.67A2.67 2.67 0 118 5.33a2.67 2.67 0 010 5.34zm5.23-7.04a.96.96 0 11-1.92 0 .96.96 0 011.92 0z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-col" id="footer-col-product">
+          <h4 id="footer-col-product-title">Product</h4>
+          <a href="#features" id="footer-link-features">Features</a>
+          <a href="#how-it-works" id="footer-link-hiw">How It Works</a>
+          <a href="#showcase" id="footer-link-platform">Platform</a>
+          <a href="#" id="footer-link-pricing">Pricing</a>
+          <a href="#" id="footer-link-changelog">Changelog</a>
+        </div>
+        <div class="footer-col" id="footer-col-company">
+          <h4 id="footer-col-company-title">Company</h4>
+          <a href="#" id="footer-link-about">About</a>
+          <a href="#results" id="footer-link-customers">Customers</a>
+          <a href="#" id="footer-link-careers">Careers</a>
+          <a href="#" id="footer-link-contact">Contact</a>
+        </div>
+        <div class="footer-col" id="footer-col-legal">
+          <h4 id="footer-col-legal-title">Legal</h4>
+          <a href="#" id="footer-link-privacy">Privacy Policy</a>
+          <a href="#" id="footer-link-terms">Terms of Service</a>
+          <a href="#" id="footer-link-cookies">Cookie Policy</a>
+          <a href="#" id="footer-link-gdpr">GDPR</a>
+        </div>
+      </div>
+      <div id="footer-bottom">
+        <span id="footer-copyright">&copy; 2026 Lead Found. All rights reserved.</span>
+        <div id="footer-bottom-links">
+          <a href="#" id="footer-bottom-privacy">Privacy</a>
+          <a href="#" id="footer-bottom-terms">Terms</a>
+          <a href="#" id="footer-bottom-cookies">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== JAVASCRIPT ========== -->
+  <script>
+    (function() {
+      'use strict';
+
+      // -- Scroll Reveal --
+      const revealObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(function(el) {
+        revealObserver.observe(el);
+      });
+
+      // -- Sticky Nav --
+      var nav = document.getElementById('nav');
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 60) {
+          nav.classList.add('scrolled');
+        } else {
+          nav.classList.remove('scrolled');
+        }
+      });
+
+      // -- Mobile Menu --
+      var hamburger = document.getElementById('nav-hamburger');
+      var mobileMenu = document.getElementById('nav-mobile');
+      var mobileClose = document.getElementById('nav-mobile-close');
+
+      hamburger.addEventListener('click', function() {
+        mobileMenu.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+
+      mobileClose.addEventListener('click', function() {
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+
+      document.querySelectorAll('.mobile-nav-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+          mobileMenu.classList.remove('open');
+          document.body.style.overflow = '';
+        });
+      });
+
+      // -- Showcase Tabs --
+      var tabs = document.querySelectorAll('.showcase-tab');
+      var showcaseImages = document.querySelectorAll('.showcase-image');
+
+      tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          var idx = parseInt(this.getAttribute('data-tab'));
+          tabs.forEach(function(t) { t.classList.remove('active'); });
+          showcaseImages.forEach(function(img) { img.classList.remove('active'); });
+          this.classList.add('active');
+          showcaseImages[idx].classList.add('active');
+        });
+      });
+
+      // -- Testimonials Carousel --
+      var slides = document.querySelectorAll('.testimonial-slide');
+      var dots = document.querySelectorAll('.testimonial-dot');
+      var prevBtn = document.getElementById('testimonial-prev');
+      var nextBtn = document.getElementById('testimonial-next');
+      var currentSlide = 0;
+
+      function showSlide(idx) {
+        slides.forEach(function(s) { s.classList.remove('active'); });
+        dots.forEach(function(d) { d.classList.remove('active'); });
+        currentSlide = (idx + slides.length) % slides.length;
+        slides[currentSlide].classList.add('active');
+        dots[currentSlide].classList.add('active');
+      }
+
+      prevBtn.addEventListener('click', function() { showSlide(currentSlide - 1); });
+      nextBtn.addEventListener('click', function() { showSlide(currentSlide + 1); });
+      dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+          showSlide(parseInt(this.getAttribute('data-slide')));
+        });
+      });
+
+      // Auto-advance testimonials
+      var autoSlide = setInterval(function() { showSlide(currentSlide + 1); }, 5000);
+      var carouselEl = document.getElementById('testimonials-carousel');
+      carouselEl.addEventListener('mouseenter', function() { clearInterval(autoSlide); });
+      carouselEl.addEventListener('mouseleave', function() {
+        autoSlide = setInterval(function() { showSlide(currentSlide + 1); }, 5000);
+      });
+
+      // -- Counter Animation --
+      var metricObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            animateCounters();
+            metricObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.3 });
+
+      var metricsSection = document.getElementById('cap-metrics');
+      if (metricsSection) metricObserver.observe(metricsSection);
+
+      function animateCounters() {
+        var metric1 = document.getElementById('metric-1-value');
+        var metric2 = document.getElementById('metric-2-value');
+        var metric3 = document.getElementById('metric-3-value');
+        var metric4 = document.getElementById('metric-4-value');
+
+        animateValue(metric1, 0, 72, 1500, function(v) { return v.toFixed(1) + '%'; });
+        animateValue(metric2, 0, 5626, 1800, function(v) { return Math.floor(v).toLocaleString(); });
+        animateValue(metric3, 0, 3.84, 1200, function(v) { return '$' + v.toFixed(2); });
+        animateValue(metric4, 0, 14, 1000, function(v) { return Math.floor(v) + 'm 36s'; });
+      }
+
+      function animateValue(el, start, end, duration, formatter) {
+        var startTime = null;
+        function step(timestamp) {
+          if (!startTime) startTime = timestamp;
+          var progress = Math.min((timestamp - startTime) / duration, 1);
+          var eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+          var current = start + (end - start) * eased;
+          el.textContent = formatter(current);
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      // -- Smooth Scroll for Anchor Links --
+      document.querySelectorAll('a[href^="#"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          var target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            e.preventDefault();
+            var offset = 80;
+            var pos = target.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: pos, behavior: 'smooth' });
+          }
+        });
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
