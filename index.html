@@ -923,7 +923,168 @@
       padding: 64px 48px;
     }
 
-    /* ========== 11. FOOTER ========== */
+    /* ========== 11. PRICING ========== */
+    #pricing {
+      padding: var(--section-padding);
+      background: linear-gradient(180deg, #0d1225 0%, #111b33 50%, #0d1225 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    #pricing-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    #pricing-header .section-subhead { margin: 0 auto; }
+    #pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .pricing-card {
+      background: linear-gradient(160deg, rgba(17,24,50,0.95) 0%, rgba(10,15,28,0.98) 100%);
+      border: 1px solid rgba(31,41,55,0.6);
+      border-radius: var(--radius-lg);
+      padding: 48px 32px 40px;
+      text-align: center;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .pricing-card:hover {
+      border-color: rgba(0,255,200,0.25);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px var(--accent-glow);
+    }
+    .pricing-card.featured {
+      border-color: rgba(0,255,200,0.3);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2), 0 0 30px var(--accent-glow);
+    }
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 20px;
+      background: var(--accent);
+      color: var(--bg-primary);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 50px;
+      white-space: nowrap;
+    }
+    .pricing-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      font-size: 64px;
+      line-height: 1;
+    }
+    .pricing-tier {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .pricing-tier.bronze { color: #CD7F32; }
+    .pricing-tier.silver { color: #C0C0C0; }
+    .pricing-tier.gold { color: #FFD700; }
+    .pricing-divider {
+      width: 60px;
+      height: 2px;
+      margin: 16px auto;
+    }
+    .pricing-divider.bronze { background: #CD7F32; }
+    .pricing-divider.silver { background: #C0C0C0; }
+    .pricing-divider.gold { background: #FFD700; }
+    .pricing-volume {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+    .pricing-volume-label {
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 24px;
+    }
+    .pricing-extra {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+    }
+    .pricing-price {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .pricing-amount {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    .pricing-period {
+      font-size: 16px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .pricing-onboarding {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+    .pricing-cta {
+      display: block;
+      width: 100%;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #4dd9c0 0%, #00bfa5 100%);
+      color: var(--bg-primary);
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: none;
+      transition: var(--transition);
+      text-align: center;
+      margin-top: auto;
+    }
+    .pricing-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,255,200,0.3);
+    }
+
+    /* ========== 12. CALENDAR ========== */
+    #calendar {
+      padding: var(--section-padding);
+    }
+    #calendar-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    #calendar-header .section-subhead { margin: 0 auto; }
+    #calendar-embed {
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--bg-border);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    #calendar-embed .calendly-inline-widget {
+      min-width: 320px;
+      height: 720px;
+    }
+
+    /* ========== 13. FOOTER ========== */
     #footer {
       padding: 80px 0 40px;
       border-top: 1px solid var(--bg-border);
@@ -998,7 +1159,7 @@
       #hiw-inner, #cap-content { grid-template-columns: 1fr; gap: 48px; }
       #hiw-visual { order: -1; }
       #cap-metrics { grid-template-columns: repeat(2, 1fr); }
-      #results-grid, #features-grid { grid-template-columns: repeat(2, 1fr); }
+      #results-grid, #features-grid, #pricing-grid { grid-template-columns: repeat(2, 1fr); }
       #footer-inner { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 768px) {
@@ -1011,7 +1172,7 @@
       #hero-ctas .btn-primary, #hero-ctas .btn-outline { width: 100%; justify-content: center; }
       #hero-social-proof { flex-direction: column; gap: 16px; }
       #cap-metrics { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-      #results-grid, #features-grid { grid-template-columns: 1fr; }
+      #results-grid, #features-grid, #pricing-grid { grid-template-columns: 1fr; }
       #showcase-tabs { gap: 6px; }
       .showcase-tab { padding: 8px 16px; font-size: 13px; }
       .testimonial-quote { font-size: 18px; }
@@ -1042,10 +1203,11 @@
           <a href="#how-it-works" id="nav-link-hiw">How It Works</a>
           <a href="#results" id="nav-link-results">Results</a>
           <a href="#showcase" id="nav-link-showcase">Platform</a>
+          <a href="#pricing" id="nav-link-pricing">Pricing</a>
         </div>
         <div id="nav-actions">
           <button id="nav-login" aria-label="Log in">Log In</button>
-          <a href="#cta" id="nav-cta">Get Started</a>
+          <a href="#pricing" id="nav-cta">Get Started</a>
         </div>
         <button id="nav-hamburger" aria-label="Open menu">
           <span id="hamburger-line-1"></span>
@@ -1063,7 +1225,8 @@
     <a href="#how-it-works" id="mobile-link-hiw" class="mobile-nav-link">How It Works</a>
     <a href="#results" id="mobile-link-results" class="mobile-nav-link">Results</a>
     <a href="#showcase" id="mobile-link-showcase" class="mobile-nav-link">Platform</a>
-    <a href="#cta" id="mobile-link-cta" class="btn-primary">Get Started</a>
+    <a href="#pricing" id="mobile-link-pricing" class="mobile-nav-link">Pricing</a>
+    <a href="#pricing" id="mobile-link-cta" class="btn-primary">Get Started</a>
   </div>
 
   <main>
@@ -1085,7 +1248,7 @@
             Lead Found's AI agent discovers website contact forms, crafts personalized messages, and submits them automatically &mdash; turning every business website into a lead generation channel.
           </p>
           <div id="hero-ctas" class="reveal">
-            <a href="#cta" id="hero-cta-primary" class="btn-primary">
+            <a href="#pricing" id="hero-cta-primary" class="btn-primary">
               Start Free Trial
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
@@ -1426,22 +1589,77 @@
       </div>
     </section>
 
-    <!-- ========== 10. FINAL CTA ========== -->
-    <section id="cta">
-      <div id="cta-glow"></div>
+    <!-- ========== 10. PRICING ========== -->
+    <section id="pricing">
       <div class="container">
-        <div id="cta-inner">
-          <div id="cta-box">
-            <p class="section-overline" id="cta-overline" style="text-align:center;">Get Started</p>
-            <h2 class="section-headline" id="cta-headline" style="text-align:center;">Start Reaching Businesses <span class="accent">at Scale</span></h2>
-            <p class="section-subhead" id="cta-subhead">Join 500+ agencies already using Lead Found to automate their outreach pipeline. No credit card required.</p>
-            <div style="text-align:center; margin-top:40px;">
-              <a href="#" id="cta-button" class="btn-primary" style="padding:18px 48px; font-size:16px;">
-                Get Started Free
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </a>
+        <div id="pricing-header" class="reveal">
+          <p class="section-overline" id="pricing-overline">Pricing</p>
+          <h2 class="section-headline" id="pricing-headline">AI Prospecting</h2>
+          <p class="section-subhead" id="pricing-subhead">Choose the plan that fits your outreach volume. Scale up anytime.</p>
+        </div>
+        <div id="pricing-grid" class="reveal">
+
+          <!-- Bronze -->
+          <div class="pricing-card" id="pricing-card-bronze">
+            <div class="pricing-icon" id="pricing-icon-bronze">&#x1F949;</div>
+            <div class="pricing-tier bronze" id="pricing-tier-bronze">Bronze</div>
+            <div class="pricing-divider bronze" id="pricing-divider-bronze"></div>
+            <div class="pricing-volume" id="pricing-volume-bronze">25,000</div>
+            <div class="pricing-volume-label" id="pricing-volume-label-bronze">Website Contact Form Submissions</div>
+            <div class="pricing-price" id="pricing-price-bronze">
+              <span class="pricing-amount">$1,000</span>
+              <span class="pricing-period">/ Month</span>
             </div>
+            <div class="pricing-onboarding" id="pricing-onboarding-bronze">$500 Onboarding</div>
+            <a href="#calendar" class="pricing-cta" id="pricing-cta-bronze">Book an AI Demo</a>
           </div>
+
+          <!-- Silver -->
+          <div class="pricing-card featured" id="pricing-card-silver">
+            <span class="pricing-badge" id="pricing-badge-silver">Most Popular</span>
+            <div class="pricing-icon" id="pricing-icon-silver">&#x1F948;</div>
+            <div class="pricing-tier silver" id="pricing-tier-silver">Silver</div>
+            <div class="pricing-divider silver" id="pricing-divider-silver"></div>
+            <div class="pricing-volume" id="pricing-volume-silver">150,000</div>
+            <div class="pricing-volume-label" id="pricing-volume-label-silver">Website Contact Form Submissions</div>
+            <div class="pricing-price" id="pricing-price-silver">
+              <span class="pricing-amount">$3,000</span>
+              <span class="pricing-period">/ Month</span>
+            </div>
+            <div class="pricing-onboarding" id="pricing-onboarding-silver">$1,500 Onboarding</div>
+            <a href="#calendar" class="pricing-cta" id="pricing-cta-silver">Book an AI Demo</a>
+          </div>
+
+          <!-- Gold -->
+          <div class="pricing-card" id="pricing-card-gold">
+            <div class="pricing-icon" id="pricing-icon-gold">&#x1F947;</div>
+            <div class="pricing-tier gold" id="pricing-tier-gold">Gold</div>
+            <div class="pricing-divider gold" id="pricing-divider-gold"></div>
+            <div class="pricing-volume" id="pricing-volume-gold">150,000</div>
+            <div class="pricing-volume-label" id="pricing-volume-label-gold">Web Form Submissions</div>
+            <div class="pricing-extra" id="pricing-extra-gold">Full Time VA</div>
+            <div class="pricing-price" id="pricing-price-gold">
+              <span class="pricing-amount">$5,000</span>
+              <span class="pricing-period">/ Month</span>
+            </div>
+            <div class="pricing-onboarding" id="pricing-onboarding-gold">$2,500 Onboarding</div>
+            <a href="#calendar" class="pricing-cta" id="pricing-cta-gold">Book an AI Demo</a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 11. CALENDAR ========== -->
+    <section id="calendar">
+      <div class="container">
+        <div id="calendar-header" class="reveal">
+          <p class="section-overline" id="calendar-overline">Book a Demo</p>
+          <h2 class="section-headline" id="calendar-headline">Schedule Your <span class="accent">AI Demo</span></h2>
+          <p class="section-subhead" id="calendar-subhead">Pick a time that works for you. We'll walk you through the platform and answer any questions.</p>
+        </div>
+        <div id="calendar-embed" class="reveal">
+          <div class="calendly-inline-widget" data-url="https://calendly.com/info_toptalentvas/15?hide_gdpr_banner=1" style="min-width:320px;height:720px;"></div>
         </div>
       </div>
     </section>
@@ -1653,6 +1871,7 @@
 
     })();
   </script>
+  <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
 
 </body>
 </html>
